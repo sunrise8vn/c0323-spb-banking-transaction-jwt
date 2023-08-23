@@ -33,7 +33,7 @@ public class UserPrinciple implements UserDetails {
         this.role = role.getValue();
     }
 
-    public static UserPrinciple build(User user, String fullName) {
+    public static UserPrinciple build(User user) {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getUserRole().getCode());
         authorities.add(authority);
@@ -41,7 +41,7 @@ public class UserPrinciple implements UserDetails {
         return new UserPrinciple(
                 user.getId(),
                 user.getUsername(),
-                fullName,
+                user.getUsername(),
                 user.getPassword(),
                 authorities,
                 user.getUserRole().getName()

@@ -5,29 +5,24 @@ import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
-
+@Component
 @Service
 public class JwtService {
+
     private static final String SECRET_KEY = "GoiTenToiNheBanThanHoiCoToiLuonCungChiaSotDeRoiTaLaiCoThemNiemTin";
-    public static final long JWT_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
+    private static final long JWT_TOKEN_VALIDITY = 1000L * 60 * 60;
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class.getName());
 
     public String generateTokenLogin(Authentication authentication) {
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("fullName", userPrincipal.getFullName());
-        claims.put("role", userPrincipal.getRole());
-
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
-                .addClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + JWT_TOKEN_VALIDITY))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
@@ -59,6 +54,5 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody().getSubject();
     }
-
 }
 

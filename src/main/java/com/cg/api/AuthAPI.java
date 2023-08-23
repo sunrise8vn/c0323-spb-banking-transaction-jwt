@@ -2,7 +2,10 @@ package com.cg.api;
 
 import com.cg.exception.DataInputException;
 import com.cg.exception.EmailExistsException;
+import com.cg.model.JwtResponse;
+import com.cg.model.User;
 import com.cg.model.UserRole;
+import com.cg.model.dto.UserLoginReqDTO;
 import com.cg.model.dto.UserRegisterReqDTO;
 import com.cg.service.jwt.JwtService;
 import com.cg.service.user.IUserRoleService;
@@ -75,45 +78,45 @@ public class AuthAPI {
             throw new DataInputException("Account information is not valid, please check the information again");
         }
     }
-//
-//    @PostMapping("/login")
-//    public ResponseEntity<?> login(@RequestBody UserLoginDTO userLoginDTO) {
-//        try {
-//            Authentication authentication = authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(userLoginDTO.getUsername(), userLoginDTO.getPassword()));
-//
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//            String jwt = jwtService.generateTokenLogin(authentication);
-//            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-//            User currentUser = userService.getByUsername(userLoginDTO.getUsername());
-//
-//            JwtResponse jwtResponse = new JwtResponse(
-//                    jwt,
-//                    currentUser.getId(),
-//                    userDetails.getUsername(),
-//                    currentUser.getUsername(),
-//                    userDetails.getAuthorities()
-//            );
-//
-//            ResponseCookie springCookie = ResponseCookie.from("JWT", jwt)
-//                    .httpOnly(false)
-//                    .secure(false)
-//                    .path("/")
-//                    .maxAge(60 * 1000)
-//                    .domain("localhost")
-//                    .build();
-//
-//            System.out.println(jwtResponse);
-//
-//            return ResponseEntity
-//                    .ok()
-//                    .header(HttpHeaders.SET_COOKIE, springCookie.toString())
-//                    .body(jwtResponse);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-//        }
-//    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserLoginReqDTO userLoginReqDTO) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userLoginReqDTO.getUsername(), userLoginReqDTO.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtService.generateTokenLogin(authentication);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            Optional<User> userOptional = userService.findByUsername(userLoginReqDTO.getUsername());
+
+            JwtResponse jwtResponse = new JwtResponse(
+                    jwt,
+                    userOptional.get().getId(),
+                    userDetails.getUsername(),
+                    userOptional.get().getUsername(),
+                    userDetails.getAuthorities()
+            );
+
+            ResponseCookie springCookie = ResponseCookie.from("JWT", jwt)
+                    .httpOnly(false)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(60 * 1000)
+                    .domain("localhost")
+                    .build();
+
+            System.out.println(jwtResponse);
+
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.SET_COOKIE, springCookie.toString())
+                    .body(jwtResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+    }
 
 }

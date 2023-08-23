@@ -12,14 +12,14 @@ import java.util.Collection;
 @Getter
 @Setter
 public class JwtResponse {
-    private String id;
+    private Long id;
     private String token;
     private String type = "Bearer";
     private String username;
     private String fullName;
     private Collection<? extends GrantedAuthority> roles;
 
-    public JwtResponse(String accessToken, String id, String username, String fullName, Collection<? extends GrantedAuthority> roles) {
+    public JwtResponse(String accessToken, Long id, String username, String fullName, Collection<? extends GrantedAuthority> roles) {
         this.token = accessToken;
         this.id = id;
         this.username = username;
