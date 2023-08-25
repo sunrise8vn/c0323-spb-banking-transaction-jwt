@@ -58,3 +58,18 @@ label.error {
 input.error {
     border: solid 1px red;
 }
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 60px;
+    background-color: #177d1b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+footer button {
+    margin: 5px;
+}

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "customers")
+@Accessors(chain = true)
 public class Customer extends BaseEntity {
 
     @Id
@@ -41,6 +43,9 @@ public class Customer extends BaseEntity {
     @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
     private List<Deposit> deposits;
 
+    @OneToOne
+    private CustomerAvatar avatar;
+
     @Override
     public String toString() {
         return "Customer{" +
@@ -61,6 +66,7 @@ public class Customer extends BaseEntity {
                 .setPhone(phone)
                 .setBalance(balance)
                 .setLocationRegion(locationRegion.toLocationRegionResDTO())
+                .setAvatar(avatar.toCustomerAvatarResDTO())
                 ;
     }
 

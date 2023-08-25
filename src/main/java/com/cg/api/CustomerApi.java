@@ -56,10 +56,12 @@ public class CustomerApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PostMapping
-    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
-        Customer newCustomer = customerService.create(customer);
+    public ResponseEntity<?> create(@ModelAttribute CustomerCreateReqDTO customerCreateReqDTO) {
+        Customer customer = customerService.create(customerCreateReqDTO);
 
-        return new ResponseEntity<>(newCustomer, HttpStatus.CREATED);
+        CustomerResDTO customerResDTO = customer.toCustomerResDTO();
+
+        return new ResponseEntity<>(customerResDTO, HttpStatus.CREATED);
     }
 
     @PostMapping("/deposit")

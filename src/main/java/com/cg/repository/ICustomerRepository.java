@@ -20,7 +20,8 @@ public interface ICustomerRepository extends JpaRepository<Customer, Long> {
                 "cus.email, " +
                 "cus.phone, " +
                 "cus.balance, " +
-                "cus.locationRegion" +
+                "cus.locationRegion, " +
+                "cus.avatar" +
             ") FROM Customer AS cus " +
             "WHERE cus.deleted = :deleted"
     )

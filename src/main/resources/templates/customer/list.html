@@ -20,6 +20,7 @@
                 <thead>
                 <tr>
                     <th>#</th>
+                    <th>Avatar</th>
                     <th>FullName</th>
                     <th>Email</th>
                     <th>Phone</th>
@@ -28,7 +29,7 @@
                     <th>District</th>
                     <th>Ward</th>
                     <th>Address</th>
-                    <th colspan="5" class="text-center">Action</th>
+<!--                    <th colspan="5" class="text-center">Action</th>-->
                 </tr>
                 </thead>
                 <tbody id="tbCustomerBody">
@@ -67,6 +68,10 @@
                 </tbody>
             </table>
         </div>
+
+        <footer class="container-fluid">
+
+        </footer>
     </div>
 
     <!-- Modal Create -->
@@ -204,10 +209,14 @@
             return `<option value="${obj.ward_id}">${obj.ward_name}</option>`;
         }
 
-        page.commands.renderCustomer = (obj) => {
+        page.commands.renderCustomer = (obj, avatar) => {
+            let imageThumbnail = AppBase.BASE_URL_CLOUD_IMAGE + "/" + AppBase.BASE_SCALE_IMAGE + "/" + avatar.fileFolder + "/" + avatar.fileName;
             return `
                     <tr id="tr_${obj.id}">
                         <td>${obj.id}</td>
+                        <td>
+                            <img src="${imageThumbnail}" alt="" />
+                        </td>
                         <td>${obj.fullName}</td>
                         <td>${obj.email}</td>
                         <td>${obj.phone}</td>
@@ -216,31 +225,6 @@
                         <td>${obj.locationRegion.districtName}</td>
                         <td>${obj.locationRegion.wardName}</td>
                         <td>${obj.locationRegion.address}</td>
-                        <td>
-                            <button class="btn btn-outline-secondary edit" data-id="${obj.id}">
-                                <i class="fas fa-user-edit"></i>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-success deposit" data-id="${obj.id}">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-warning">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-primary">
-                                <i class="fas fa-exchange-alt"></i>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-danger">
-                                <i class="fas fa-user-slash"></i>
-                            </button>
-                        </td>
                     </tr>
                 `;
         }
@@ -284,7 +268,8 @@
                     page.elements.tbCustomerBody.empty();
 
                     $.each(res, (index, item) => {
-                        const str = page.commands.renderCustomer(item);
+                        const avatar = item.avatar;
+                        const str = page.commands.renderCustomer(item, avatar);
                         page.elements.tbCustomerBody.prepend(str);
                     })
                 }, error: function () {
@@ -337,6 +322,56 @@
                         console.log(error);
                     })
 
+            })
+        }
+
+        page.commands.handleClickEditButton = () => {
+            $('footer').on('click', 'button', function () {
+                const id = $(this).data('id');
+                $.ajax({
+                    url: page.urls.getCustomerById + '/' + id
+                })
+                    .done((data) => {
+                        if (Object.keys(data).length > 0) {
+
+                            // $.each(data, (k, v) => {
+                            //     $('#' + k + 'Up').val(v);
+                            // })
+
+                            const avatar = data.avatar;
+
+                            customer = data;
+                            locationRegion = customer.locationRegion;
+
+                            page.commands.getAllDistrictsByProvinceId(locationRegion.provinceId, page.elements.districtUp).then((data) => {
+                                $('#districtUp').val(locationRegion.districtId);
+
+                                page.commands.getAllWardsByDistrictId(locationRegion.districtId, page.elements.wardUp).then((data) => {
+                                    $('#wardUp').val(locationRegion.wardId);
+                                });
+                            });
+
+                            $('#idUp').val(customer.id);
+                            $('#fullNameUp').val(customer.fullName);
+                            $('#emailUp').val(customer.email);
+                            $('#phoneUp').val(customer.phone);
+
+                            $('#provinceUp').val(locationRegion.provinceId);
+
+
+                            $('#addressUp').val(locationRegion.address);
+                            let imageThumbnail = AppBase.BASE_URL_CLOUD_IMAGE + "/" + AppBase.BASE_SCALE_IMAGE_300_250_100 + "/" + avatar.fileFolder + "/" + avatar.fileName;
+                            $('#avatarUp').attr('src', imageThumbnail);
+
+                            $('#modalUpdate').modal('show');
+                        }
+                        else {
+                            alert('Say No');
+                        }
+                    })
+                    .fail((error) => {
+                        console.log(error);
+                    })
             })
         }
 
@@ -440,6 +475,8 @@
             locationRegion.wardName = page.elements.wardCre.find('option:selected').text();
             locationRegion.address = page.elements.addressCre.val();
 
+            const file = $('#avatarCre')[0].files[0];
+
             customer.id = null;
             customer.fullName = page.elements.fullNameCre.val();
             customer.email = page.elements.emailCre.val();
@@ -448,18 +485,32 @@
             customer.balance = 0;
             customer.deleted = 0;
 
+            let formData = new FormData();
+            formData.append('fullName', customer.fullName);
+            formData.append('email', customer.email);
+            formData.append('phone', customer.phone);
+            formData.append('provinceId', locationRegion.provinceId);
+            formData.append('provinceName', locationRegion.provinceName);
+            formData.append('districtId', locationRegion.districtId);
+            formData.append('districtName', locationRegion.districtName);
+            formData.append('wardId', locationRegion.wardId);
+            formData.append('wardName', locationRegion.wardName);
+            formData.append('address', locationRegion.address);
+            formData.append('avatar', file);
+
+
             setTimeout(() => {
                 $.ajax({
-                    headers: {
-                        'accept': 'application/json',
-                        'content-type': 'application/json'
-                    },
-                    type: 'POST',
+                    type: "POST",
+                    contentType: false,
+                    cache: false,
+                    processData: false,
                     url: page.urls.createCustomer,
-                    data: JSON.stringify(customer)
+                    data: formData
                 })
                     .done((data) => {
-                        const str = page.commands.renderCustomer(data);
+                        const avatar = data.avatar;
+                        const str = page.commands.renderCustomer(data, avatar);
                         page.elements.tbCustomerBody.prepend(str);
 
                         page.elements.modalCreate.modal('hide');
@@ -509,10 +560,11 @@
                         'conetent-type': 'application/json'
                     },
                     type: 'PATCH',
-                    url: 'http://localhost:3300/customers/' + customerId,
+                    url: 'http://localhost:9002/customers/' + customerId,
                     data: obj
                 })
                     .done((data) => {
+                        // const avatar = data.avatar;
                         const str = renderCustomer(data);
                         const currentRow = $('#tr_' + customerId);
                         currentRow.replaceWith(str);
@@ -536,6 +588,34 @@
                     })
             }, 5000);
         })
+
+
+        page.commands.renderFooter = (id) => {
+            return `
+                <div>
+                    <button class="btn btn-light edit" data-id="${id}">
+                        <i class="fas fa-user-edit"></i>
+                        Edit
+                    </button>
+                    <button class="btn btn-success deposit" data-id="${id}">
+                        <i class="fas fa-plus"></i>
+                        Deposit
+                    </button>
+                    <button class="btn btn-warning">
+                        <i class="fas fa-minus"></i>
+                        Withdraw
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transfer
+                    </button>
+                    <button class="btn btn-danger">
+                        <i class="fas fa-user-slash"></i>
+                        Deactive
+                    </button>
+                </div>
+            `;
+        }
 
         $('#frmCreate').validate({
             rules: {
@@ -612,7 +692,15 @@
 
 
         page.initializeControlEvent = () => {
-            page.commands.handleClickAllEditButton();
+
+            page.elements.tbCustomerBody.on('click', 'tr', function () {
+                const id = $(this).attr('id').replace('tr_', '');
+                const str = page.commands.renderFooter(id);
+                $('footer').empty().append(str);
+            })
+
+            // page.commands.handleClickAllEditButton();
+            page.commands.handleClickEditButton();
 
             page.commands.handleClickAllDepositButton();
 

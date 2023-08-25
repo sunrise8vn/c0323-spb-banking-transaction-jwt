@@ -1,50 +1,40 @@
-package com.cg.model;
+package com.cg.model.dto;
 
-import com.cg.model.dto.LocationRegionResDTO;
+
+import com.cg.model.Customer;
+import com.cg.model.CustomerAvatar;
+import com.cg.model.Deposit;
+import com.cg.model.LocationRegion;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@Entity
-@Table(name = "location_region")
 @Accessors(chain = true)
-public class LocationRegion {
+public class CustomerCreateReqDTO {
+    private String fullName;
+    private String email;
+    private String phone;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "province_id")
     private String provinceId;
-
-    @Column(name = "province_name")
     private String provinceName;
-
-    @Column(name = "district_id")
     private String districtId;
-
-    @Column(name = "district_name")
     private String districtName;
-
-    @Column(name = "ward_id")
     private String wardId;
-
-    @Column(name = "ward_name")
     private String wardName;
-
     private String address;
 
-    public LocationRegionResDTO toLocationRegionResDTO() {
-        return new LocationRegionResDTO()
-                .setId(id)
+    private MultipartFile avatar;
+
+    public LocationRegion toLocationRegion() {
+        return new LocationRegion()
                 .setProvinceId(provinceId)
                 .setProvinceName(provinceName)
                 .setDistrictId(districtId)
@@ -53,6 +43,13 @@ public class LocationRegion {
                 .setWardName(wardName)
                 .setAddress(address)
                 ;
+    }
 
+    public Customer toCustomer() {
+        return new Customer()
+                .setFullName(fullName)
+                .setEmail(email)
+                .setPhone(phone)
+                ;
     }
 }
